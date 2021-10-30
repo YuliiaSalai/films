@@ -1,0 +1,34 @@
+================ react-query 
+
+1. Инсталяция  и подключение библиотеки react-query
+
+
+2. Получение фильмов с сервера  
+
+https://react-query.tanstack.com/reference/useQuery
+https://react-query.tanstack.com/guides/query-retries
+https://react-query.tanstack.com/devtools
+https://react-query.tanstack.com/reference/useQuery
+
+1.1 staleTime, cacheTime
+https://twitter.com/tannerlinsley/status/1385258144549330952
+
+
+3. Создание и обновление фильма
+
+https://react-query.tanstack.com/reference/useIsMutating
+https://react-query.tanstack.com/reference/useMutation
+https://react-query.tanstack.com/guides/mutations
+https://react-query.tanstack.com/guides/query-invalidation
+https://react-query.tanstack.com/guides/query-keys
+https://react-query.tanstack.com/guides/query-invalidation#query-matching-with-invalidatequeries
+https://react-query.tanstack.com/guides/optimistic-updates
+
+
+4. Обновление свойства фильма featured
+
+5. Удаление фильма
+
+6. Prefetch фильма
+
+
