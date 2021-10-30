@@ -4,8 +4,24 @@ import {
   waitForElementToBeRemoved,
 } from "@testing-library/react";
 import FilmsPage from "pages/FilmsPage";
-import { AppProviders } from "contexts";
 import { server, rest } from "test/server";
+
+import {QueryClient, QueryClientProvider} from 'react-query';
+import { queryConfig } from 'contexts';
+import {UserContextProvider} from 'contexts/UserContext';
+import {MemoryRouter as Router} from 'react-router-dom'
+
+function wrapper({children}){
+  const queryClient = new QueryClient(queryConfig);
+  return <Router>
+    <QueryClientProvider client={queryClient}>
+      <UserContextProvider>
+        {children}
+      </UserContextProvider>
+    </QueryClientProvider>
+  </Router>
+}
+
 
 const mockUserState = { token: "12345", role: "admin" };
 
@@ -15,7 +31,7 @@ jest.mock("contexts/UserContext", () => ({
 }));
 
 test("should render admin buttons", async () => {
-  render(<FilmsPage />, { wrapper: AppProviders });
+  render(<FilmsPage />, { wrapper });
   await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i));
   expect(screen.queryByTestId("admin-buttons")).toBeInTheDocument();
 });
@@ -27,7 +43,7 @@ test("should render spinner", async () => {
     })
   );
 
-  render(<FilmsPage />, { wrapper: AppProviders });
+  render(<FilmsPage />, { wrapper });
   await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i));
   expect(screen.queryByRole("alert")).toBeInTheDocument();
 });

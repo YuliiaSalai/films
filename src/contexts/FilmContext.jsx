@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useCallback } from "react";
 import { prop, sortWith, ascend, descend } from "ramda";
-import _find from "lodash/find";
 import api from "api";
 
 export const FilmsStateContext = createContext();

@@ -1,8 +1,23 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import FilmForm from "pages/FilmsPage/components/FilmForm";
 import films from "test/films";
-import { AppProviders } from "contexts";
+import {QueryClient, QueryClientProvider} from 'react-query';
+import { queryConfig } from 'contexts';
+import {UserContextProvider} from 'contexts/UserContext';
+import {MemoryRouter as Router} from 'react-router-dom'
+import * as funcs from 'hooks/films';
+
+function wrapper({children}){
+  const queryClient = new QueryClient(queryConfig);
+  return <Router>
+    <QueryClientProvider client={queryClient}>
+      <UserContextProvider>
+        {children}
+      </UserContextProvider>
+    </QueryClientProvider>
+  </Router>
+}
 
 function setValuesToControlls(override = {}) {
   const { title, img, description, director, duration, price, featured } = {
@@ -22,12 +37,6 @@ function setValuesToControlls(override = {}) {
 const mockFilm = films[0];
 const mockSaveFilm = jest.fn();
 
-jest.mock("contexts/FilmContext", () => ({
-  ...jest.requireActual("contexts/FilmContext"),
-  useStateFilms: () => mockFilm,
-  useSaveFilm: () => mockSaveFilm,
-}));
-
 const mockUserState = { token: "12345", role: "admin" };
 jest.mock("contexts/UserContext", () => ({
   ...jest.requireActual("contexts/UserContext"),
@@ -42,9 +51,12 @@ jest.mock("react-router-dom", () => ({
 }));
 
 test("FilmForm should render correct", async () => {
-  mockSaveFilm.mockImplementation(() => Promise.resolve(mockFilm));
+  jest.spyOn(funcs, 'useEditFilm').mockImplementation(() => mockFilm)
+  jest.spyOn(funcs, 'useSaveFilm').mockImplementation(() => ({
+    mutate: mockSaveFilm
+  }))
 
-  render(<FilmForm />, { wrapper: AppProviders });
+  render(<FilmForm />, { wrapper });
 
   setValuesToControlls();
   const btnEl = screen.getByText(/save/i);
@@ -53,32 +65,9 @@ test("FilmForm should render correct", async () => {
   expect(mockSaveFilm).toHaveBeenCalledTimes(1);
 });
 
-test("form should not has class loading while server errors", async () => {
-  const titleError = "title has error";
-  const resolvedValue = { response: { data: { errors: {} } } };
-  resolvedValue.response.data.errors = { title: titleError };
-
-  mockSaveFilm.mockImplementation(() => Promise.reject(resolvedValue));
-
-  render(<FilmForm />, { wrapper: AppProviders });
-
-  setValuesToControlls();
-
-  const btnEl = screen.getByText(/save/i);
-  const form = screen.getByTestId("film-form");
-
-  await waitFor(() => userEvent.click(btnEl));
-
-  expect(form).not.toHaveClass("loading");
-
-  const messageErr = screen.queryByRole("alert");
-  expect(messageErr).toBeInTheDocument();
-  expect(messageErr).toHaveTextContent(titleError);
-});
-
 test("should render FormMessage when error", () => {
-  mockSaveFilm.mockImplementation(() => Promise.resolve(mockFilm));
-  render(<FilmForm />, { wrapper: AppProviders });
+  jest.spyOn(funcs, 'useEditFilm').mockImplementation(()=>({_id: null}))
+  render(<FilmForm />, { wrapper });
 
   setValuesToControlls({ title: null });
 

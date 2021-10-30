@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import _find from "lodash/find";
 import { Link, useHistory, useParams, Redirect } from "react-router-dom";
 import UploadImage from "components/UploadImage";
 import FormMessage from "components/FormMessage";
 import setFormObj, {setFormErr} from "components/FormUtils";
-import { useStateFilms, useSaveFilm } from "contexts/FilmContext";
+import { useSaveFilm, useEditFilm } from 'hooks/films'
 import { useUserState } from "contexts/UserContext";
 
 const initialData = {
@@ -21,19 +20,17 @@ const initialData = {
 const FilmForm = () => {
   const [data, setData] = useState(initialData);
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
 
   const history = useHistory();
   const { _id } = useParams();
 
-  const films = useStateFilms();
-  const saveFilm = useSaveFilm();
   const user = useUserState();
 
   const isAdmin = user.token && user.role === "admin";
 
+  const film = useEditFilm(_id);
+
   useEffect(() => {
-    const film = _find(films, { _id }) || {};
     if (film._id && film._id !== data._id) {
       setData(film);
       setErrors({});
@@ -42,7 +39,7 @@ const FilmForm = () => {
       setData(initialData);
       setErrors({})
     }
-  }, [_id, data._id, films]);
+  }, [_id, data._id, film]);
 
   const updatePhoto = (img) => {
     setData((data) => ({ ...data, img }));
@@ -52,7 +49,7 @@ const FilmForm = () => {
   const handleKeyPress = (e) => {
     const keyCode = e.keyCode || e.which;
     const keyValue = String.fromCharCode(keyCode);
-    if (/[\+e-]/.test(keyValue)) e.preventDefault();
+    if (/[+e-]/.test(keyValue)) e.preventDefault();
   };
 
   const validate = (data) => {
@@ -66,19 +63,22 @@ const FilmForm = () => {
     return errors;
   };
 
+  const mutation = useSaveFilm();
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const errors = validate(data);
     setErrors(errors);
 
     if (Object.keys(errors).length === 0) {
-      setLoading(true);
-      saveFilm(data)
-        .then(() => history.push("/films"))
-        .catch((err) => {
-          setErrors(err.response.data.errors);
-          setLoading(false);
-        });
+      mutation.mutate(data, {
+        onSuccess: () => {
+          history.push("/films")
+        },
+        onError: (err) => {
+          setErrors(err.response.data.errors)
+        }
+      })
     }
   };
 
@@ -91,7 +91,7 @@ const FilmForm = () => {
       onSubmit={handleSubmit}
       aria-label="film-form"
       data-testid="film-form"
-      className={`ui form ${loading && "loading"}`}
+      className='ui form'
     >
       <div className="ui grid mb-3">
         {/* two column row START */}

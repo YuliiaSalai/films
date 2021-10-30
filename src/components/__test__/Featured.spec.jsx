@@ -1,28 +1,23 @@
-import { render, screen } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Featured from "components/Featured";
+import * as funcs from 'hooks/films';
 
 import { AppProviders } from "contexts";
 
 const propsData = { film: { _id: "1", featured: true } };
-const toggleFeatured = jest.fn();
 
-const mockToggleFeatured = jest.fn();
-jest.mock("contexts/FilmContext", () => ({
-  ...jest.requireActual("contexts/FilmContext"),
-  useToggleFeatured: () => mockToggleFeatured,
-}));
+const wrapper = ({children}) => 
+<AppProviders>
+{children}
+</AppProviders>
 
-const RenderComponent = (props) => {
-  return (
-    <AppProviders>
-      <Featured {...props} />
-    </AppProviders>
-  );
-};
-
-test("should correct render", () => {
-  const { rerender, container } = render(<RenderComponent {...propsData} />);
+test("should correct render", async () => {
+  const mockToggleFeatured = jest.fn();
+  jest.spyOn(funcs, 'useToggleFeatured').mockImplementation(()=>({
+    mutate: mockToggleFeatured
+  }));
+  const { rerender, container } = render(<Featured {...propsData} />, {wrapper});
 
   const spanEl = container.querySelector("span");
   const iconEl = container.querySelector("i");
@@ -30,13 +25,13 @@ test("should correct render", () => {
   expect(iconEl).toHaveClass("yellow");
   expect(iconEl).not.toHaveClass("empty");
 
-  userEvent.click(spanEl);
+  await waitFor(() => userEvent.click(spanEl));
 
   expect(mockToggleFeatured).toHaveBeenCalledTimes(1);
-  expect(mockToggleFeatured).toHaveBeenCalledWith(propsData.film);
+  expect(mockToggleFeatured).toHaveBeenCalledWith({...propsData.film, featured: false});
 
   propsData.film.featured = false;
-  rerender(<RenderComponent {...propsData} />);
+  rerender(<Featured {...propsData} />);
 
   expect(iconEl).toHaveClass("empty");
   expect(iconEl).not.toHaveClass("yellow");
