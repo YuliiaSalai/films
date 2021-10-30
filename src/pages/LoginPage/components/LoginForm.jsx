@@ -18,6 +18,7 @@ const LoginForm = ({ submit }) => {
     const errors = {};
     if (!isEmail(data.email)) errors.email = "Email is not correct";
     if (!data.password) errors.password = "Password cannot be blank";
+
     return errors;
   };
 
@@ -28,7 +29,8 @@ const LoginForm = ({ submit }) => {
 
     if (Object.keys(errors).length === 0) {
       setLoading(true);
-      submit(data).catch((error) => {
+      submit(data)
+      .catch((error) => {
         setErrors(error.response.data.errors);
         setLoading(false);
       });

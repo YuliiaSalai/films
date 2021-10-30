@@ -1,13 +1,20 @@
 import { useHistory } from "react-router-dom";
 import SignupForm from "pages/SignupPage/components/SignupForm";
 import api from "api";
+import { useToast } from "@chakra-ui/react";
 
-const SignupPage = (props) => {
+const SignupPage = () => {
   const history = useHistory();
+  const toast = useToast();
 
   const submit = (user) =>
     api.users.create(user).then(() => {
-      props.setMessage("User has created");
+      toast({
+        title: 'User has been created',
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+    })
       history.push("/login");
     });
 
@@ -21,3 +28,4 @@ const SignupPage = (props) => {
 };
 
 export default SignupPage;
+

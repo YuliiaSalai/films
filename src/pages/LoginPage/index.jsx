@@ -11,7 +11,7 @@ const LoginPage = () => {
     api.users.login(user).then((token) => {
       login(token);
       history.push("/films");
-    });
+    })
   return (
     <div className="ui grid">
       <div className="eight wide column">

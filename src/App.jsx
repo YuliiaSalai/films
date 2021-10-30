@@ -13,21 +13,13 @@ const FilmDetails = lazy(() =>
 );
 
 const App = () => {
-  const [message, setMessage] = useState("");
   const user = useUserState();
 
   return (
     <Suspense fallback={<FullSpinner />}>
       <div className="ui container">
         <TopNavigation />
-
-        {message && (
-          <div className="ui info message">
-            <i onClick={() => setMessage("")} className="close icon" />
-            {message}
-          </div>
-        )}
-
+        
         <Route exact path="/">
           <HomePage />
         </Route>
@@ -40,7 +32,7 @@ const App = () => {
         </Route>
 
         <Route path="/signup">
-          <SignupPage setMessage={setMessage} />
+          <SignupPage/>
         </Route>
         <Route path="/login">
           <LoginPage />
